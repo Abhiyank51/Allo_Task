@@ -21,6 +21,17 @@ export default function Home() {
     setPage(1);
   }, [debouncedSearch, warehouseId]);
 
+  // Listen for navbar clicks to reset state cleanly without hard reload
+  useEffect(() => {
+    const handleReset = () => {
+      setPage(1);
+      setSearchTerm("");
+      setWarehouseId("ALL");
+    };
+    window.addEventListener('reset-home-state', handleReset);
+    return () => window.removeEventListener('reset-home-state', handleReset);
+  }, []);
+
   const { data: warehouses } = useQuery({
     queryKey: ["warehouses"],
     queryFn: async () => {
