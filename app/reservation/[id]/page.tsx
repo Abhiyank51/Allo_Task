@@ -74,11 +74,11 @@ export default function ReservationPage() {
   return (
     <main className="container mx-auto px-4 py-12 max-w-2xl">
       <button 
-        onClick={() => router.push("/")}
+        onClick={() => router.back()}
         className="flex items-center gap-2 text-neutral-400 hover:text-white transition-colors mb-8"
       >
         <ArrowLeft className="w-4 h-4" />
-        Back to Products
+        Go Back
       </button>
 
       <motion.div 
