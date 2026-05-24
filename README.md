@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Allo Health Inventory Demo
 
-## Getting Started
+An end-to-end inventory reservation and order-fulfillment demo for a multi-warehouse retail/D2C platform.
 
-First, run the development server:
+## Features
+- **Concurrency-Safe Reservations**: Uses Postgres transactions and atomic updates to ensure race conditions are prevented. Even if 100 users try to buy the last unit simultaneously, exactly 1 will succeed.
+- **Auto Expiration**: Reservations are held for 10 minutes. If not confirmed, they expire and stock is returned. This is handled by a Cron job and lazy evaluation.
+- **Modern UI**: Built with Next.js 15, Tailwind CSS, shadcn/ui, and Framer Motion for a premium, fast, and animated UX.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Tech Stack
+- Next.js 15 (App Router)
+- TypeScript
+- Prisma ORM
+- Supabase (PostgreSQL)
+- Tailwind CSS
+- shadcn/ui
+- Framer Motion
+- React Query
+
+## Architecture & Data Model
+- `Product`: Core product info (SKU, price)
+- `Warehouse`: Fulfillment centers
+- `Inventory`: Junction table tracking `totalUnits` and `reservedUnits` per product per warehouse.
+- `Reservation`: Tracks pending, confirmed, and released orders.
+
+**Concurrency Strategy**:
+When reserving, we run an atomic raw SQL update inside a Prisma transaction:
+```sql
+UPDATE "Inventory" 
+SET "reservedUnits" = "reservedUnits" + {qty} 
+WHERE "productId" = {pId} AND "warehouseId" = {wId} 
+AND "totalUnits" - "reservedUnits" >= {qty}
 ```
+If 0 rows are affected, we know stock was insufficient, throwing a 409 error. This prevents overselling entirely.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Local Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+2. **Environment Variables**:
+   Copy `.env.example` to `.env` and fill in your Supabase connection strings.
+3. **Database Setup**:
+   ```bash
+   npx prisma generate
+   npx prisma migrate dev
+   npm run db:seed
+   ```
+4. **Run Server**:
+   ```bash
+   npm run dev
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Testing Concurrency
+To prove the system is safe from race conditions, run:
+```bash
+npm run test:concurrency
+```
+This fires 10 simultaneous API requests trying to reserve the exact same last unit. You will see exactly 1 succeed and 9 rejected. (Ensure the dev server is running on port 3000 first).
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deployment
+1. Connect repo to Vercel.
+2. Add `DATABASE_URL`, `DIRECT_URL`, and `CRON_SECRET` to Vercel environment variables.
+3. Configure Vercel Cron in `vercel.json` to hit `/api/cron/release-expired`.
