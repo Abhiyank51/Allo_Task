@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { Activity, Search, Filter, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "use-debounce";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -58,8 +59,18 @@ export default function AdminDashboard() {
 
   if (isProductsLoading) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500"></div>
+      <div className="container mx-auto px-4 py-12 max-w-6xl">
+        <Skeleton className="h-10 w-64 mb-2 rounded-lg" />
+        <Skeleton className="h-4 w-96 mb-10 rounded-lg" />
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <Skeleton className="h-32 w-full rounded-2xl" />
+          <Skeleton className="h-32 w-full rounded-2xl" />
+          <Skeleton className="h-32 w-full rounded-2xl" />
+        </div>
+
+        <Skeleton className="h-[400px] w-full rounded-2xl mb-16" />
+        <Skeleton className="h-[400px] w-full rounded-2xl" />
       </div>
     );
   }

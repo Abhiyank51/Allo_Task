@@ -6,7 +6,7 @@ import { ProductCard } from "@/components/product-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Search, Filter } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search, Filter, SearchX } from "lucide-react";
 import { useDebounce } from "use-debounce";
 
 export default function Home() {
@@ -101,10 +101,25 @@ export default function Home() {
       ) : (
         <>
           {data?.data?.length === 0 ? (
-            <div className="text-center py-20 bg-neutral-900/30 rounded-2xl border border-neutral-800">
-              <p className="text-neutral-400 text-lg">No products found matching your filters.</p>
-              <Button variant="link" onClick={() => { setSearchTerm(""); setWarehouseId("ALL"); }} className="text-teal-400 mt-2">Clear Filters</Button>
-            </div>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center py-24 bg-neutral-900/40 rounded-3xl border border-neutral-800/80 shadow-2xl flex flex-col items-center justify-center max-w-2xl mx-auto"
+            >
+              <div className="w-20 h-20 bg-neutral-800/50 rounded-full flex items-center justify-center mb-6">
+                <SearchX className="w-10 h-10 text-neutral-500" />
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-2">No products found</h3>
+              <p className="text-neutral-400 text-base mb-8 max-w-md">
+                We couldn't find any medical supplies matching your current search and filter criteria. Try adjusting your parameters.
+              </p>
+              <Button 
+                onClick={() => { setSearchTerm(""); setWarehouseId("ALL"); }} 
+                className="bg-teal-600 hover:bg-teal-500 text-white font-medium px-8"
+              >
+                Clear All Filters
+              </Button>
+            </motion.div>
           ) : (
             <motion.div 
               initial={{ opacity: 0 }}
