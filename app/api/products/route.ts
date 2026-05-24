@@ -4,25 +4,39 @@ import { releaseExpiredReservations } from "@/lib/cleanup-expired";
 
 export async function GET(req: Request) {
   try {
-    // Lazily cleanup expired reservations before fetching
     await releaseExpiredReservations();
 
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "6");
+    const search = searchParams.get("search") || "";
+    const warehouseId = searchParams.get("warehouseId") || "";
     const skip = (page - 1) * limit;
+
+    const where: any = {};
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: "insensitive" } },
+        { sku: { contains: search, mode: "insensitive" } },
+      ];
+    }
+    if (warehouseId && warehouseId !== "ALL") {
+      where.inventories = {
+        some: { warehouseId }
+      };
+    }
 
     const [products, totalItems] = await Promise.all([
       prisma.product.findMany({
+        where,
         skip,
         take: limit,
         orderBy: { id: 'asc' },
         include: { inventories: { include: { warehouse: true } } },
       }),
-      prisma.product.count()
+      prisma.product.count({ where })
     ]);
 
-    // Map to include available stock
     const data = products.map((product) => ({
       ...product,
       inventories: product.inventories.map((inv) => ({

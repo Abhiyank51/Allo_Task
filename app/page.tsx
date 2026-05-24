@@ -1,21 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ProductCard } from "@/components/product-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search, Filter } from "lucide-react";
+import { useDebounce } from "use-debounce";
 
 export default function Home() {
   const [page, setPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch] = useDebounce(searchTerm, 500);
+  const [warehouseId, setWarehouseId] = useState("ALL");
   const limit = 6;
 
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ["products", page],
+  // Reset page to 1 when search or filter changes
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, warehouseId]);
+
+  const { data: warehouses } = useQuery({
+    queryKey: ["warehouses"],
     queryFn: async () => {
-      const res = await fetch(`/api/products?page=${page}&limit=${limit}`);
+      const res = await fetch("/api/warehouses");
+      return res.json();
+    }
+  });
+
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ["products", page, debouncedSearch, warehouseId],
+    queryFn: async () => {
+      const res = await fetch(`/api/products?page=${page}&limit=${limit}&search=${encodeURIComponent(debouncedSearch)}&warehouseId=${warehouseId === "ALL" ? "" : warehouseId}`);
       if (!res.ok) throw new Error("Failed to fetch products");
       return res.json();
     },
@@ -23,7 +40,7 @@ export default function Home() {
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-6xl">
-      <div className="flex flex-col items-center text-center mb-16 space-y-4">
+      <div className="flex flex-col items-center text-center mb-12 space-y-4">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -39,14 +56,35 @@ export default function Home() {
         >
           Reliable Supply Fulfillment
         </motion.h1>
-        <motion.p 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="text-lg text-neutral-400 max-w-2xl"
-        >
-          Browse our catalog of certified medical equipment. Our high-concurrency reservation system guarantees your hospital gets the critical stock it needs without overselling.
-        </motion.p>
+      </div>
+
+      <div className="mb-8 flex flex-col md:flex-row gap-4 items-center justify-between bg-neutral-900/50 p-4 rounded-2xl border border-neutral-800">
+        <div className="relative w-full md:w-96">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search className="h-5 w-5 text-neutral-500" />
+          </div>
+          <input
+            type="text"
+            className="block w-full pl-10 pr-3 py-2 border border-neutral-700 rounded-xl leading-5 bg-neutral-900 text-neutral-300 placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 sm:text-sm transition-colors"
+            placeholder="Search products by name or SKU..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        
+        <div className="flex items-center gap-2 w-full md:w-auto">
+          <Filter className="w-5 h-5 text-neutral-500" />
+          <select
+            value={warehouseId}
+            onChange={(e) => setWarehouseId(e.target.value)}
+            className="block w-full md:w-64 pl-3 pr-10 py-2 text-base border-neutral-700 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm rounded-xl bg-neutral-900 text-neutral-300"
+          >
+            <option value="ALL">All Warehouses</option>
+            {warehouses?.map((w: any) => (
+              <option key={w.id} value={w.id}>{w.name}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {isLoading ? (
@@ -62,16 +100,22 @@ export default function Home() {
         </div>
       ) : (
         <>
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-          >
-            {data?.data?.map((product: any) => (
-              <ProductCard key={product.id} product={product} onReserveSuccess={refetch} />
-            ))}
-          </motion.div>
+          {data?.data?.length === 0 ? (
+            <div className="text-center py-20 bg-neutral-900/30 rounded-2xl border border-neutral-800">
+              <p className="text-neutral-400 text-lg">No products found matching your filters.</p>
+              <Button variant="link" onClick={() => { setSearchTerm(""); setWarehouseId("ALL"); }} className="text-teal-400 mt-2">Clear Filters</Button>
+            </div>
+          ) : (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+            >
+              {data?.data?.map((product: any) => (
+                <ProductCard key={product.id} product={product} onReserveSuccess={refetch} />
+              ))}
+            </motion.div>
+          )}
 
           {data?.metadata && data.metadata.totalPages > 1 && (
             <div className="flex justify-center items-center mt-12 gap-4">

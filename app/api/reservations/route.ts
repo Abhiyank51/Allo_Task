@@ -3,14 +3,47 @@ import { CreateReservationSchema } from "@/lib/validations";
 import { createReservation } from "@/lib/reservations";
 import prisma from "@/lib/prisma";
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const reservations = await prisma.reservation.findMany({
-      include: { product: true, warehouse: true },
-      orderBy: { createdAt: "desc" }
+    const { searchParams } = new URL(req.url);
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "10");
+    const status = searchParams.get("status") || "";
+    const search = searchParams.get("search") || "";
+    const skip = (page - 1) * limit;
+
+    const where: any = {};
+    if (status && status !== "ALL") {
+      where.status = status;
+    }
+    if (search) {
+      where.product = {
+        name: { contains: search, mode: "insensitive" }
+      };
+    }
+
+    const [reservations, totalItems] = await Promise.all([
+      prisma.reservation.findMany({
+        where,
+        skip,
+        take: limit,
+        include: { product: true, warehouse: true },
+        orderBy: { createdAt: "desc" }
+      }),
+      prisma.reservation.count({ where })
+    ]);
+
+    return NextResponse.json({
+      data: reservations,
+      metadata: {
+        totalItems,
+        totalPages: Math.ceil(totalItems / limit),
+        currentPage: page,
+        limit,
+      }
     });
-    return NextResponse.json(reservations);
   } catch (error) {
+    console.error("Failed to fetch reservations:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
