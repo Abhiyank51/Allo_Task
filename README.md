@@ -1,6 +1,6 @@
 # Allo Health - Multi-Warehouse Inventory Fulfillment Demo
 
-**[🚀 View Live Deployment on Vercel](https://allo-task-nine.vercel.app/)** *(Live deployment)*
+# 🚀 View Live Deployment on Vercel -  [Link](https://allo-task-nine.vercel.app/)
 
 An enterprise-grade, concurrency-safe inventory reservation and order-fulfillment platform built for multi-warehouse retail. This application solves the critical D2C race condition where thousands of concurrent shoppers attempt to purchase the exact same physical unit during high-traffic sales.
 
@@ -11,7 +11,7 @@ An enterprise-grade, concurrency-safe inventory reservation and order-fulfillmen
 
 | Storefront & Search | Admin Inventory Dashboard | Supabase Architecture |
 | :---: | :---: | :---: |
-| ![Storefront Placeholder](https://placehold.co/600x400/0f766e/ffffff?text=Storefront+Screenshot) | ![Admin Dashboard Placeholder](https://placehold.co/600x400/0f766e/ffffff?text=Admin+Dashboard+Screenshot) | ![Supabase Placeholder](https://placehold.co/600x400/0f766e/ffffff?text=Supabase+Tables+Screenshot) |
+| ![Storefront Placeholder](main_dashboard) | ![Admin Dashboard Placeholder](inventory_dashboard) | ![Supabase Placeholder](db_schema) |
 
 ---
 
