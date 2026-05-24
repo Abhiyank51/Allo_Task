@@ -1,15 +1,21 @@
 "use client";
 
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ProductCard } from "@/components/product-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function Home() {
-  const { data: products, isLoading, refetch } = useQuery({
-    queryKey: ["products"],
+  const [page, setPage] = useState(1);
+  const limit = 6;
+
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ["products", page],
     queryFn: async () => {
-      const res = await fetch("/api/products");
+      const res = await fetch(`/api/products?page=${page}&limit=${limit}`);
       if (!res.ok) throw new Error("Failed to fetch products");
       return res.json();
     },
@@ -55,16 +61,42 @@ export default function Home() {
           ))}
         </div>
       ) : (
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-        >
-          {products?.map((product: any) => (
-            <ProductCard key={product.id} product={product} onReserveSuccess={refetch} />
-          ))}
-        </motion.div>
+        <>
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          >
+            {data?.data?.map((product: any) => (
+              <ProductCard key={product.id} product={product} onReserveSuccess={refetch} />
+            ))}
+          </motion.div>
+
+          {data?.metadata && data.metadata.totalPages > 1 && (
+            <div className="flex justify-center items-center mt-12 gap-4">
+              <Button 
+                variant="outline" 
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="border-neutral-800 text-neutral-300 hover:bg-neutral-800 hover:text-white"
+              >
+                <ChevronLeft className="w-4 h-4 mr-1" /> Previous
+              </Button>
+              <span className="text-neutral-400 text-sm font-medium">
+                Page {page} of {data.metadata.totalPages}
+              </span>
+              <Button 
+                variant="outline" 
+                onClick={() => setPage(p => Math.min(data.metadata.totalPages, p + 1))}
+                disabled={page === data.metadata.totalPages}
+                className="border-neutral-800 text-neutral-300 hover:bg-neutral-800 hover:text-white"
+              >
+                Next <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
