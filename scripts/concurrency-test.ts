@@ -7,7 +7,7 @@ async function main() {
 
   // Find the product with only 1 unit available (Product 5 from seed)
   const product = await prisma.product.findFirst({
-    where: { sku: "SNEAK-LTD-TEST" },
+    where: { sku: "MED-SCALPEL-TEST" },
     include: { inventories: true },
   });
 

@@ -90,7 +90,7 @@ export function ProductCard({ product, onReserveSuccess }: { product: any; onRes
                   onClick={() => setSelectedWarehouse(inv.warehouseId)}
                   className={`flex items-center justify-between px-3 py-2 rounded-lg border text-sm transition-colors ${
                     selectedWarehouse === inv.warehouseId 
-                      ? 'border-blue-500 bg-blue-500/10 text-blue-100' 
+                      ? 'border-teal-500 bg-teal-500/10 text-teal-100' 
                       : 'border-neutral-800 bg-neutral-900/50 text-neutral-400 hover:border-neutral-700 hover:bg-neutral-800'
                   }`}
                 >
@@ -132,7 +132,7 @@ export function ProductCard({ product, onReserveSuccess }: { product: any; onRes
             <Button 
               onClick={handleReserve}
               disabled={availableUnits === 0 || isReserving || quantity > availableUnits}
-              className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-medium shadow-[0_0_15px_rgba(37,99,235,0.3)] transition-all"
+              className="flex-1 bg-teal-600 hover:bg-teal-500 text-white font-medium shadow-[0_0_15px_rgba(13,148,136,0.3)] transition-all"
             >
               {isReserving ? "Reserving..." : availableUnits === 0 ? "Out of Stock" : "Reserve"}
             </Button>

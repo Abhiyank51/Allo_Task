@@ -66,7 +66,7 @@ export default function ReservationPage() {
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500"></div>
       </div>
     );
   }
@@ -86,7 +86,7 @@ export default function ReservationPage() {
         animate={{ opacity: 1, scale: 1 }}
         className="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-8 shadow-2xl backdrop-blur-xl relative overflow-hidden"
       >
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-cyan-500" />
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-teal-500 to-cyan-500" />
         
         <div className="flex items-start justify-between mb-8">
           <div>
@@ -146,7 +146,7 @@ export default function ReservationPage() {
               Cancel Order
             </Button>
             <Button 
-              className="flex-1 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white shadow-lg"
+              className="flex-1 bg-gradient-to-r from-teal-600 to-teal-500 hover:from-teal-500 hover:to-teal-400 text-white shadow-lg"
               onClick={handleConfirm}
               disabled={isProcessing}
             >
