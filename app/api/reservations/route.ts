@@ -1,6 +1,19 @@
 import { NextResponse } from "next/server";
 import { CreateReservationSchema } from "@/lib/validations";
 import { createReservation } from "@/lib/reservations";
+import prisma from "@/lib/prisma";
+
+export async function GET() {
+  try {
+    const reservations = await prisma.reservation.findMany({
+      include: { product: true, warehouse: true },
+      orderBy: { createdAt: "desc" }
+    });
+    return NextResponse.json(reservations);
+  } catch (error) {
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}
 
 export async function POST(req: Request) {
   try {

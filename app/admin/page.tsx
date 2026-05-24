@@ -5,18 +5,27 @@ import { motion } from "framer-motion";
 import { Activity } from "lucide-react";
 
 export default function AdminDashboard() {
-  const { data: products, isLoading } = useQuery({
+  const { data: products, isLoading: isProductsLoading } = useQuery({
     queryKey: ["products-admin"],
     queryFn: async () => {
       const res = await fetch("/api/products");
       if (!res.ok) throw new Error("Failed to fetch products");
       return res.json();
     },
-    // Poll every 5 seconds for live dashboard updates
     refetchInterval: 5000,
   });
 
-  if (isLoading) {
+  const { data: reservations, isLoading: isReservationsLoading } = useQuery({
+    queryKey: ["reservations-admin"],
+    queryFn: async () => {
+      const res = await fetch("/api/reservations");
+      if (!res.ok) throw new Error("Failed to fetch reservations");
+      return res.json();
+    },
+    refetchInterval: 5000,
+  });
+
+  if (isProductsLoading || isReservationsLoading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500"></div>
@@ -103,6 +112,54 @@ export default function AdminDashboard() {
                   </tr>
                 ))
               ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="mt-16 mb-10">
+        <h2 className="text-2xl font-bold text-white mb-2">Active & Past Reservations</h2>
+        <p className="text-neutral-400">View and manage customer reservations.</p>
+      </div>
+
+      <div className="bg-neutral-900/40 border border-neutral-800 rounded-2xl overflow-hidden shadow-2xl mb-12">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm text-neutral-300">
+            <thead className="bg-neutral-900/80 text-neutral-400 border-b border-neutral-800 text-xs uppercase font-semibold">
+              <tr>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4">Product</th>
+                <th className="px-6 py-4">Warehouse</th>
+                <th className="px-6 py-4 text-right">Qty</th>
+                <th className="px-6 py-4 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-neutral-800/50">
+              {reservations?.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-8 text-center text-neutral-500">
+                    No reservations found. Make one from the homepage!
+                  </td>
+                </tr>
+              ) : (
+                reservations?.map((res: any) => (
+                  <tr key={res.id} className="hover:bg-neutral-800/30 transition-colors">
+                    <td className="px-6 py-4">
+                      {res.status === "PENDING" && <span className="bg-amber-500/10 text-amber-500 px-2 py-1 rounded text-xs font-medium border border-amber-500/20">PENDING</span>}
+                      {res.status === "CONFIRMED" && <span className="bg-teal-500/10 text-teal-500 px-2 py-1 rounded text-xs font-medium border border-teal-500/20">CONFIRMED</span>}
+                      {res.status === "RELEASED" && <span className="bg-neutral-500/10 text-neutral-400 px-2 py-1 rounded text-xs font-medium border border-neutral-500/20">RELEASED</span>}
+                    </td>
+                    <td className="px-6 py-4 font-medium text-neutral-100">{res.product.name}</td>
+                    <td className="px-6 py-4">{res.warehouse.name}</td>
+                    <td className="px-6 py-4 text-right font-medium">{res.quantity}</td>
+                    <td className="px-6 py-4 text-right">
+                      <a href={`/reservation/${res.id}`} className="text-teal-400 hover:text-teal-300 font-medium text-xs uppercase">
+                        View / Manage &rarr;
+                      </a>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
