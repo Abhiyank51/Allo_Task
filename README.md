@@ -8,7 +8,6 @@ An enterprise-grade, concurrency-safe inventory reservation and order-fulfillmen
 
 ## 📸 System Previews
 
-*(Replace the placeholder links below with your actual screenshot URLs)*
 
 | Storefront & Search | Admin Inventory Dashboard | Supabase Architecture |
 | :---: | :---: | :---: |
