@@ -8,7 +8,7 @@ export default function AdminDashboard() {
   const { data: products, isLoading: isProductsLoading } = useQuery({
     queryKey: ["products-admin"],
     queryFn: async () => {
-      const res = await fetch("/api/products");
+      const res = await fetch("/api/products?limit=1000");
       if (!res.ok) throw new Error("Failed to fetch products");
       return res.json();
     },
@@ -38,7 +38,7 @@ export default function AdminDashboard() {
   let reservedUnitsOverall = 0;
   let availableUnitsOverall = 0;
 
-  products?.forEach((product: any) => {
+  products?.data?.forEach((product: any) => {
     product.inventories.forEach((inv: any) => {
       totalUnitsOverall += inv.totalUnits;
       reservedUnitsOverall += inv.reservedUnits;
@@ -93,7 +93,7 @@ export default function AdminDashboard() {
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-800/50">
-              {products?.map((product: any) => (
+              {products?.data?.map((product: any) => (
                 product.inventories.map((inv: any) => (
                   <tr key={`${product.id}-${inv.warehouseId}`} className="hover:bg-neutral-800/30 transition-colors">
                     <td className="px-6 py-4 font-medium text-neutral-100 flex items-center gap-3">
