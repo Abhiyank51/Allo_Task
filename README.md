@@ -1,6 +1,6 @@
 # Allo Health - Multi-Warehouse Inventory Fulfillment Demo
 
-**[🚀 View Live Deployment on Vercel](#)** *(Add your Vercel link here)*
+**[🚀 View Live Deployment on Vercel](https://allo-task-nine.vercel.app/)** *(Live deployment)*
 
 An enterprise-grade, concurrency-safe inventory reservation and order-fulfillment platform built for multi-warehouse retail. This application solves the critical D2C race condition where thousands of concurrent shoppers attempt to purchase the exact same physical unit during high-traffic sales.
 
