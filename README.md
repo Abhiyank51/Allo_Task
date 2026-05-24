@@ -55,6 +55,25 @@ To prevent abandoned carts from permanently depleting inventory, reservations au
 
 ---
 
+## 🔌 API Reference
+
+The platform is powered by a robust REST API designed to handle high-concurrency e-commerce operations safely. 
+
+| Method | Path | Behavior |
+| :--- | :--- | :--- |
+| `GET` | `/api/products` | Lists products with available stock per warehouse. Supports pagination (`?page=1&limit=6`) and advanced filtering by `search` and `warehouseId`. |
+| `GET` | `/api/warehouses` | Lists all fulfillment warehouses. |
+| `GET` | `/api/reservations` | Lists active and historical reservations. Supports pagination and filtering by `search` and `status` (PENDING, CONFIRMED, RELEASED). |
+| `POST` | `/api/reservations` | Safely reserves units for a 10-minute window. Uses atomic SQL transactions to prevent race conditions. Returns `409 Conflict` if stock runs out during the request. |
+| `POST` | `/api/reservations/:id/confirm` | Confirms payment success. Permanently deducts stock and releases the hold. Returns `410 Gone` if the hold has already expired. |
+| `POST` | `/api/reservations/:id/release` | Manually releases a reservation early (e.g., if a user cancels checkout or payment fails), instantly returning stock to the available pool. |
+| `POST` | `/api/cron/release-expired` | Secure CRON endpoint (protected by `CRON_SECRET`) that runs every 5 minutes to automatically sweep the database and release any holds that exceeded their 10-minute expiry window. |
+
+### Concurrency & Race Conditions
+The `POST /api/reservations` endpoint is specifically engineered to handle thousands of simultaneous shoppers. Instead of checking stock in memory, it uses **PostgreSQL Atomic Updates** combined with Prisma Transactions. If two requests come in simultaneously for the last unit of a SKU, exactly one will succeed, and the database will instantly reject the other with a clean `409 Conflict`, ensuring inventory is never oversold.
+
+---
+
 ## 💻 How to Run Locally
 
 ### 1. Prerequisites
